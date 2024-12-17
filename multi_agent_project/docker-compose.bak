@@ -1,0 +1,49 @@
+# This defines the services that docker compose will manage
+services:
+# Name of service being defined
+  multi-agents:
+  # Specify the build stage
+    build:
+    # This is the build context. Docker will search this directory for a dockerfile
+      context: ./docker
+      dockerfile: agents.dockerfile
+      # This is used for multi-stage building. It specifies the build target(stage). 
+      # Docker will build till it ends at this target.
+      target: dev-ws
+    image: ros2_agents
+    container_name: multiagents
+    # Keeps container alive indefinitely
+    command: tail -f /dev/null   # Keeps the process active and avoids exiting
+    environment:
+      - ROS_DISTRO=jazzy
+      # - DISPLAY=$DISPLAY   # The $DISPLAY flag is read directly from the host\ FOR LINUX
+      - DISPLAY=novnc:0.0
+    volumes:
+      - ./ros2_ws:/home/multiagents/ros2_ws
+      - vnc_home:/home
+      # - /tmp/.X11-unix:/tmp/.X11-unix  # Sets up volume for X11 forwarding
+    networks:
+      - x11
+
+    # stdin_open: true  # Keeps the stdin open for interactive sessions.
+    
+    # This option sets the container to use the host’s network stack. The container will share the host machine’s networking namespace, 
+    # meaning it can access network interfaces on the host directly without isolation. This is typically used in situations where the container needs to interact 
+    # closely with the host system, such as when running ROS nodes that need to communicate with other services on the host.
+    # network_mode: host
+  novnc:  
+    image: theasp/novnc:latest
+    container_name: novnc
+    env_file:
+      - novnc.env
+    ports:
+      - "8080:8080"
+    networks:
+      - x11
+    volumes: 
+      - vnc_home:/home
+networks:
+  x11:
+
+volumes:
+  vnc_home:   # Setup persistent volume

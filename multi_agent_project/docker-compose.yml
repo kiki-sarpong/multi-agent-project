@@ -1,0 +1,22 @@
+# This defines the services that docker compose will manage
+services:
+# Name of service being defined
+  multi-agents:
+  # Specify the build stage
+    build:
+    # This is the build context. Docker will search this directory for a dockerfile
+      context: ./docker
+      dockerfile: agents.dockerfile
+      # This is used for multi-stage building. It specifies the build target(stage). 
+      # Docker will build till it ends at this target.
+      target: dev-ws
+    image: ros2_agents
+    container_name: multiagents
+    # Keeps container alive indefinitely
+    command: tail -f /dev/null   # Keeps the process active and avoids exiting
+    environment:
+      - ROS_DISTRO=jazzy
+      # - DISPLAY=$DISPLAY   # The $DISPLAY flag is read directly from the host\ FOR LINUX
+      - DISPLAY=host.docker.internal:0
+    volumes:
+      - ./ros2_ws:/home/multiagents/ros2_ws
